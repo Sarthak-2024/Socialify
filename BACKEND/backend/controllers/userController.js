@@ -296,3 +296,36 @@ exports.getFollowing = async (req, res, next) => {
         next(error);
     }
 }
+
+
+// GET Suggestions
+exports.suggestedUsers = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+        var users = await User.find();
+        let usersId = [];
+        for (let i = 0; i < users.length; ++i) {
+            usersId.push(users[i]._id);
+        }
+        usersId = usersId.filter(x => !x.equals(userId));
+        for (let i = 0; i < user.following.length; ++i) {
+            let alreadyFollow = user.following[i];
+            usersId = usersId.filter(x => !x.equals(alreadyFollow));
+        }
+        let userss = [];
+        for(let i = 0; i < usersId.length; ++i){
+            let tempUser = await User.findById(usersId[i]);
+            if (tempUser){
+                userss.push(tempUser);
+            }
+        }
+        res.status(200).json({
+            success: true,
+            userss
+        });
+    } catch (error) {
+        next(error);
+    }
+
+}
